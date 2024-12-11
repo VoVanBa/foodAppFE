@@ -9,6 +9,10 @@ import {
   Modal,
   TextField,
   Typography,
+  FormControl,
+  FormControlLabel,
+  Radio,
+  RadioGroup,
 } from "@mui/material";
 import CartItem from "./CartItem";
 import AddressCart from "./AddressCart";
@@ -18,10 +22,16 @@ import { useDispatch, useSelector } from "react-redux";
 import { createOrder } from "../State/Order/Action";
 import { getUser } from "../State/Authentication/Action";
 import * as Yup from "yup";
-import { addCounponToCart, clearCartAction } from "../State/Cart/Action";
-import { ToastContainer } from "react-toastify";
+import { addCounponToCart } from "../State/Cart/Action";
+import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
+const initialValues = {
+  streetAddress: "",
+  state: "",
+  city: "Đà Nẵng",
+  mobile: "",
+};
 export const style = {
   position: "absolute",
   top: "50%",
@@ -34,27 +44,19 @@ export const style = {
   p: 4,
 };
 
-const initialValues = {
-  streetAddress: "",
-  state: "",
-  pincode: "",
-  city: "",
-};
-
 const validationSchema = Yup.object({
-  streetAddress: Yup.string().required("Street address is required"),
-  state: Yup.string().required("State is required"),
-  pincode: Yup.string().required("Pincode is required"),
-  city: Yup.string().required("City is required"),
+  streetAddress: Yup.string().required("Địa chỉ đường là bắt buộc"),
+  city: Yup.string().required("Khu vực là bắt buộc"),
+  mobile: Yup.string().required("Số điện thoại di động là bắt buộc"),
 });
 
 const Cart = () => {
-  const [open, setOpen] = React.useState(false);
+  const [open, setOpen] = useState(false);
+  const [paymentMethod, setPaymentMethod] = useState("cash");
+  const [inputValue, setInputValue] = useState("");
   const dispatch = useDispatch();
   const { cart, auth, coupon } = useSelector((store) => store);
   const jwt = localStorage.getItem("jwt");
-
-  const [inputValue, setInputValue] = useState(""); // Giá trị từ input
 
   useEffect(() => {
     if (jwt) {
@@ -64,36 +66,62 @@ const Cart = () => {
 
   const createOrderUsingSelectedAddress = (selectedAddress) => {
     dispatch(createOrder(selectedAddress));
-    // dispatch(clearCartAction());
   };
+
   const calculateTotal = () => {
     return cart.cartItems.reduce((total, item) => {
       return total + item.food.price * item.quantity;
     }, 0);
   };
+
   const couponDiscount = cart?.coupon?.result || 0;
   const totalAmount = calculateTotal() - couponDiscount;
-  console.log(totalAmount);
-  const handleSubmit = (values) => {
-    const data = {
-      jwt: localStorage.getItem("jwt"),
-      order: {
-        restaurantId: cart.cartItems[0]?.food?.restaurant.id,
-        total: totalAmount,
-        deliveryAddress: {
-          fullName: auth.user?.fullName,
-          streetAddress: values.streetAddress,
-          city: values.city,
-          state: values.state,
-          postalCode: values.pincode,
-          country: "Viet Nam",
-          user: auth.user,
-        },
-        total: totalAmount,
+
+  const handleSubmit = async (values) => {
+    const orderData = {
+      restaurantId: cart.cartItems[0]?.food?.restaurant.id,
+      total: totalAmount,
+      deliveryAddress: {
+        fullName: auth.user?.fullname,
+        streetAddress: values.streetAddress,
+        city: values.city,
+        state: values.state,
+        mobile: values.mobile,
+        country: "Viet Nam",
+        user: auth.user,
       },
+      paymentMethod: paymentMethod, // Thêm paymentMethod vào orderData
     };
 
-    dispatch(createOrder(data));
+    const data = {
+      jwt: localStorage.getItem("jwt"),
+      order: orderData,
+    };
+    console.log(data);
+
+    try {
+      // Thực hiện gọi createOrder thay vì gửi request HTTP
+      const response = await dispatch(createOrder(data));
+
+      // Xử lý khi chọn phương thức thanh toán
+      if (paymentMethod === "vnpay") {
+        // Trường hợp VNPAY, chuyển hướng đến URL của VNPAY nếu có
+        if (response.redirectUrl) {
+          window.location.href = response.redirectUrl; // Chuyển hướng đến VNPAY
+        } else {
+          console.error("No redirect URL found in the response");
+          toast.error("Có lỗi xảy ra khi thanh toán, vui lòng thử lại.");
+        }
+      } else if (paymentMethod === "cash") {
+        // Nếu thanh toán bằng tiền mặt, không cần chuyển hướng
+        toast.success(
+          "Đặt hàng thành công, vui lòng chuẩn bị thanh toán khi nhận hàng."
+        );
+      }
+    } catch (error) {
+      console.error("Error:", error);
+      toast.error("Có lỗi xảy ra khi thanh toán, vui lòng thử lại.");
+    }
   };
 
   const handleCoupon = () => {
@@ -104,11 +132,10 @@ const Cart = () => {
       })
     )
       .then((res) => {
-        // Không cần kiểm tra res.error nữa, vì lỗi đã được xử lý trong catch của addCounponToCart
-        // Tuy nhiên, bạn có thể kiểm tra redux state để xác nhận hành động đã được thực hiện thành công
+        toast.success("Áp dụng mã giảm giá thành công");
       })
-      .catch(() => {
-        // Lỗi sẽ được xử lý trong addCounponToCart và thông báo đã được hiển thị qua toast
+      .catch((error) => {
+        toast.error("Mã giảm giá không hợp lệ");
       });
   };
 
@@ -120,11 +147,10 @@ const Cart = () => {
             <CartItem key={item.id} item={item} />
           ))}
           <Divider />
-
           <div>
             <p className="text-gray-400">Nhập mã giảm giá</p>
             <Input
-              value={inputValue} // Lưu giá trị từ input
+              value={inputValue}
               onChange={(e) => setInputValue(e.target.value)}
               outline="none"
               type="text"
@@ -134,7 +160,6 @@ const Cart = () => {
             </Button>
           </div>
           <Divider />
-
           <div className="billDetails px-5 text-sm">
             <p className="font-extralight py-5">Bill Details</p>
             <div className="space-y-3">
@@ -147,23 +172,42 @@ const Cart = () => {
                 <p>Giảm giá</p>
                 <p>{calculateTotal() === 0 ? "0" : couponDiscount} đ</p>
               </div>
-
               <Divider />
               <div className="flex justify-between text-gray-400">
                 <p>Tổng</p>
                 <p>{calculateTotal() === 0 ? "0" : totalAmount} đ</p>
               </div>
+              <Divider />
+              <div className="flex justify-between text-gray-400">
+                <FormControl component="fieldset">
+                  <RadioGroup
+                    aria-label="paymentMethod"
+                    name="paymentMethod"
+                    value={paymentMethod}
+                    onChange={(e) => setPaymentMethod(e.target.value)}
+                  >
+                    <FormControlLabel
+                      value="cash"
+                      control={<Radio />}
+                      label="Thanh toán bằng tiền mặt"
+                    />
+                    <FormControlLabel
+                      value="vnpay"
+                      control={<Radio />}
+                      label="Chuyển khoản qua VNPAY"
+                    />
+                  </RadioGroup>
+                </FormControl>
+              </div>
             </div>
           </div>
         </section>
         <Divider orientation="vertical" flexItem />
-
         <section className="lg:w-[70%] flex justify-center px-5 pb-10 lg:pb-0">
           <div>
             <h1 className="text-center font-semibold text-2xl py-10">
               Chọn địa chỉ giao
             </h1>
-
             <div className="flex gap-5 flex-wrap justify-center">
               {auth.user?.addresses.map((item) => (
                 <AddressCart
@@ -171,21 +215,21 @@ const Cart = () => {
                   handleSelectAddress={createOrderUsingSelectedAddress}
                   item={item}
                   showButton={true}
+                  paymentMethod={paymentMethod} // Truyền paymentMethod vào AddressCart
                 />
               ))}
-
               <Card className="flex gap-5 w-64 p-5">
                 <AddLocationIcon />
                 <div className="space-y-3 text-gray-500 text-left">
                   <h1 className="font-semibold text-lg text-white">
-                    Add new address
+                    Thêm địa chỉ
                   </h1>
                   <Button
                     variant="outlined"
                     fullWidth
                     onClick={() => setOpen(true)}
                   >
-                    Add
+                    Thêm
                   </Button>
                 </div>
               </Card>
@@ -206,65 +250,68 @@ const Cart = () => {
             validationSchema={validationSchema}
             onSubmit={handleSubmit}
           >
-            <Form>
-              <Grid container spacing={2}>
-                <Grid item xs={12}>
-                  <Field
-                    as={TextField}
-                    name="streetAddress"
-                    label="Địa chỉ"
-                    fullWidth
-                    variant="outlined"
-                    error={!!(<ErrorMessage name="Địa chỉ" />)}
-                    helperText={<ErrorMessage name="Địa chỉ" />}
-                  />
+            {({ touched, errors }) => (
+              <Form>
+                <Grid container spacing={2}>
+                  <Grid item xs={12}>
+                    <Field
+                      as={TextField}
+                      name="streetAddress"
+                      label="Địa chỉ"
+                      fullWidth
+                      variant="outlined"
+                      error={Boolean(
+                        touched.streetAddress && errors.streetAddress
+                      )}
+                      helperText={touched.streetAddress && errors.streetAddress}
+                    />
+                  </Grid>
+                  <Grid item xs={12}>
+                    <Field
+                      as={TextField}
+                      name="state"
+                      label="Quận"
+                      fullWidth
+                      variant="outlined"
+                      error={Boolean(touched.state && errors.state)}
+                      helperText={touched.state && errors.state}
+                    />
+                  </Grid>
+                  <Grid item xs={12}>
+                    <Field
+                      as={TextField}
+                      name="mobile"
+                      label="Số điện thoại"
+                      fullWidth
+                      variant="outlined"
+                      error={Boolean(touched.mobile && errors.mobile)}
+                      helperText={touched.mobile && errors.mobile}
+                    />
+                  </Grid>
+                  <Grid item xs={12}>
+                    <Field
+                      as={TextField}
+                      name="city"
+                      label="Thành phố"
+                      fullWidth
+                      variant="outlined"
+                      error={Boolean(touched.city && errors.city)}
+                      helperText={touched.city && errors.city}
+                    />
+                  </Grid>
+                  <Grid item xs={12} mt={3}>
+                    <Button
+                      variant="contained"
+                      color="primary"
+                      fullWidth
+                      type="submit"
+                    >
+                      Đặt hàng
+                    </Button>
+                  </Grid>
                 </Grid>
-                {/* <Grid item xs={12}>
-                  <Field
-                    as={TextField}
-                    name="state"
-                    label="State"
-                    fullWidth
-                    variant="outlined"
-                    error={!!(<ErrorMessage name="state" />)}
-                    helperText={<ErrorMessage name="state" />}
-                  />
-                </Grid> */}
-                <Grid item xs={12}>
-                  <Field
-                    as={TextField}
-                    name="city"
-                    label="Khu Vực"
-                    fullWidth
-                    variant="outlined"
-                    error={!!(<ErrorMessage name="Khu Vực" />)}
-                    helperText={<ErrorMessage name="Khu Vực" />}
-                  />
-                </Grid>
-                <Grid item xs={12}>
-                  <Field
-                    as={TextField}
-                    name="pincode"
-                    label="Số điện thoại"
-                    fullWidth
-                    variant="outlined"
-                    error={!!(<ErrorMessage name="Số điện thoại" />)}
-                    helperText={<ErrorMessage name="Số điện thoại" />}
-                  />
-                </Grid>
-
-                <Grid item xs={12}>
-                  <Button
-                    fullWidth
-                    variant="contained"
-                    type="submit"
-                    color="primary"
-                  >
-                    Deliver here
-                  </Button>
-                </Grid>
-              </Grid>
-            </Form>
+              </Form>
+            )}
           </Formik>
         </Box>
       </Modal>

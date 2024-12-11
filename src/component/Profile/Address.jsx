@@ -25,30 +25,31 @@ const Address = () => {
   const { auth } = useSelector((store) => store);
   const dispatch = useDispatch();
 
+  console.log(auth.user.fullname, "1111");
+
   const initialValues = {
     streetAddress: selectedAddress?.streetAddress || "",
     state: selectedAddress?.state || "",
-    pincode: selectedAddress?.pincode || "",
+    mobile: selectedAddress?.mobile || "",
     city: selectedAddress?.city || "",
   };
 
   const validationSchema = Yup.object({
-    streetAddress: Yup.string().required("Street address is required"),
-    state: Yup.string().required("State is required"),
-    pincode: Yup.string().required("Pincode is required"),
-    city: Yup.string().required("City is required"),
+    streetAddress: Yup.string().required("Địa chỉ đường là bắt buộc"),
+    state: Yup.string().required("Quận là bắt buộc"),
+    mobile: Yup.string().required("Số điện thoại là bắt buộc"),
+    city: Yup.string().required("Thành phố là bắt buộc"),
   });
-
   const jwt = localStorage.getItem("jwt");
 
   // Thay đổi trong hàm handleSubmit
   const handleSubmit = (values) => {
     const data = {
-      fullName: auth.user?.fullName,
+      fullName: auth.user.fullname,
       streetAddress: values.streetAddress,
       city: values.city,
       state: values.state,
-      postalCode: values.pincode,
+      mobile: values.mobile,
       country: "Viet Nam",
     };
 
@@ -108,7 +109,7 @@ const Address = () => {
                   <Field
                     as={TextField}
                     name="streetAddress"
-                    label="Street Address"
+                    label="Địa chỉ"
                     fullWidth
                     variant="outlined"
                     error={<ErrorMessage name="streetAddress" />}
@@ -119,14 +120,14 @@ const Address = () => {
                   <Field
                     as={TextField}
                     name="state"
-                    label="State"
+                    label="Quận"
                     fullWidth
                     variant="outlined"
                     error={<ErrorMessage name="state" />}
                     helperText={<ErrorMessage name="state" />}
                   />
                 </Grid>
-                <Grid item xs={12}>
+                {/* <Grid item xs={12}>
                   <Field
                     as={TextField}
                     name="city"
@@ -136,12 +137,12 @@ const Address = () => {
                     error={<ErrorMessage name="city" />}
                     helperText={<ErrorMessage name="city" />}
                   />
-                </Grid>
+                </Grid> */}
                 <Grid item xs={12}>
                   <Field
                     as={TextField}
-                    name="pincode"
-                    label="Pincode"
+                    name="mobile"
+                    label="Số điện thoại"
                     fullWidth
                     variant="outlined"
                     error={<ErrorMessage name="pincode" />}

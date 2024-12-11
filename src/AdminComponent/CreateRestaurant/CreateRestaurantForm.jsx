@@ -47,12 +47,10 @@ const CreateRestaurantForm = () => {
           streetAddress: values.streetAddress,
           city: values.city,
           stateProvince: values.stateProvince,
-          postalCode: values.postalCode,
-          country: values.country,
+          mobile: values.mobile,
         },
         contactInformation: {
           email: values.email,
-          mobile: values.mobile,
           instagram: values.instagram,
           facebook: values.facebook,
           tiktok: values.tiktok,
@@ -204,17 +202,7 @@ const CreateRestaurantForm = () => {
                 value={formik.values.stateProvince}
               ></TextField>
             </Grid>
-            <Grid item xs={12} lg={4}>
-              <TextField
-                fullWidth
-                id="postalCode"
-                name="postalCode"
-                label="Postal Code"
-                variant="outlined"
-                onChange={formik.handleChange}
-                value={formik.values.postalCode}
-              ></TextField>
-            </Grid>
+
             <Grid item xs={12}>
               <TextField
                 fullWidth

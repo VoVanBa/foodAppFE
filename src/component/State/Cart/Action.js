@@ -185,7 +185,7 @@ export const addCounponToCart = ({ couponCode, totalAmount }) => {
       debugger;
 
       console.log(data, "coupon");
-      toast.success("Mã giảm giá đã được áp dụng thành công!");
+      // toast.success("Mã giảm giá đã được áp dụng thành công!");
       dispatch({ type: ADD_COUPON_TO_CART_SUCCESS, payload: data });
     } catch (error) {
       debugger;

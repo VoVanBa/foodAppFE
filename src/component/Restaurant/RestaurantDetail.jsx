@@ -33,6 +33,7 @@ const RestaurantDetail = () => {
   const dispatch = useDispatch();
   const jwt = localStorage.getItem("jwt");
   const { auth, restaurant, menu } = useSelector((store) => store);
+  console.log(restaurant, "45555555");
   const { id, city } = useParams();
   const [selectedCategory, setSelectedCategory] = useState("");
   const handleFilter = (e) => {
@@ -94,11 +95,15 @@ const RestaurantDetail = () => {
           <div className="space-y-3 mt-3">
             <p className="text-gray-500 flex items-center gap-3">
               <LocationOnIcon />
-              <span>123, Nguyen Van Linh, District 7, Da Nang, Vietnam</span>
+              <span>{restaurant.restaurant?.openingHours}</span>
             </p>
             <p className="text-gray-500 flex items-center gap-3">
               <CalendarMonthIcon />
-              <span>Open from 8:00 AM to 10:00 PM</span>
+              <span>
+                {restaurant.restaurant?.address?.streetAddress},
+                {restaurant.restaurant?.address?.state},
+                {restaurant.restaurant?.address?.city},
+              </span>
             </p>
           </div>
         </div>
@@ -108,7 +113,7 @@ const RestaurantDetail = () => {
       <section className="pt-[2rem] lg:flex relative">
         <div className="space-y-10 lg:w-[20%] filter ">
           <div className="box space-y-5 lg:sticky top-28">
-            <div>
+            {/* <div>
               <Typography variant="h5" sx={{ paddingBottom: "1rem" }}>
                 Food type
               </Typography>
@@ -131,7 +136,7 @@ const RestaurantDetail = () => {
               </FormControl>
             </div>
 
-            <Divider />
+            <Divider /> */}
 
             <div>
               <Typography variant="h5" sx={{ paddingBottom: "1rem" }}>

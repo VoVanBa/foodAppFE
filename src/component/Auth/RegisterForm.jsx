@@ -84,16 +84,22 @@ const RegisterForm = () => {
             style={{ color: "red" }}
           />
 
-          <Field
-            as={Select}
-            name="role"
-            fullWidth
-            margin="normal"
-            label="Vai trò"
-            variant="outlined"
-          >
-            <MenuItem value={"ROLE_CUSTOMER"}>Khách hàng</MenuItem>
-            <MenuItem value={"ROLE_RESTAURANT_OWNER"}>Chủ nhà hàng</MenuItem>
+          <Field name="role">
+            {({ field, form }) => (
+              <Select
+                {...field}
+                fullWidth
+                variant="outlined"
+                margin="normal"
+                value={field.value || "ROLE_CUSTOMER"} // Giá trị mặc định
+                onChange={(e) => form.setFieldValue("role", e.target.value)}
+              >
+                <MenuItem value={"ROLE_CUSTOMER"}>Khách hàng</MenuItem>
+                <MenuItem value={"ROLE_RESTAURANT_OWNER"}>
+                  Chủ nhà hàng
+                </MenuItem>
+              </Select>
+            )}
           </Field>
           <ErrorMessage name="role" component="div" style={{ color: "red" }} />
 

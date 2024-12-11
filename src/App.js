@@ -18,6 +18,7 @@ import { findCart } from "./component/State/Cart/Action";
 import { Route, Router } from "react-router-dom";
 import Routers from "./Routes/Routers";
 import { getRestaurantByUserId } from "./component/State/Restaurant/Action";
+import { ToastContainer } from "react-toastify";
 
 function App() {
   const dispatch = useDispatch();
@@ -37,6 +38,7 @@ function App() {
   }, [auth.user]);
   return (
     <div className="App">
+      <ToastContainer />
       <ThemeProvider theme={darkTheme}>
         <CssBaseline />
         {/* <Navbar></Navbar> */}

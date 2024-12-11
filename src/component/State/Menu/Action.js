@@ -17,25 +17,27 @@ import {
   UPDATE_MENU_ITEMS_AVAILABILITY_REQUEST,
   UPDATE_MENU_ITEMS_AVAILABILITY_SUCCESS,
 } from "./ActionType";
+import { toast } from "react-toastify";
+
 export const createMenuItem = ({ menu, jwt }) => {
   return async (dispatch) => {
     dispatch({ type: CREATE_MENU_ITEM_REQUEST });
-    debugger;
+
     try {
       const { data } = await api.post(`${API_URL}/api/admin/food`, menu, {
         headers: {
           Authorization: `Bearer ${jwt}`,
         },
       });
-      debugger;
 
       console.log("created menu", data);
+      toast.success("Thêm sản phẩm thành công!");
       dispatch({
         type: CREATE_MENU_ITEM_SUCCESS,
         payload: data,
       });
-      debugger;
     } catch (error) {
+      toast.error("Thêm sản phẩm thất bại");
       console.log("catch error", error);
       dispatch({ type: CREATE_MENU_ITEM_FAILURE, payload: error });
     }
@@ -178,12 +180,14 @@ export const deleteFoodAction =
     dispatch({ type: DELETE_MENU_ITEM_REQUEST });
 
     try {
+      debugger;
       const { data } = await api.delete(`${API_URL}/api/admin/food/${foodId}`, {
         headers: {
           Authorization: `Bearer ${jwt}`,
         },
       });
 
+      debugger;
       console.log("Deleted food:", data);
       dispatch({ type: DELETE_MENU_ITEM_SUCCESS, payload: foodId });
     } catch (error) {

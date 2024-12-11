@@ -6,6 +6,7 @@ import RestaurantDetail from "../component/Restaurant/RestaurantDetail";
 import Cart from "../component/Cart/Cart";
 import Profile from "../component/Profile/Profile";
 import Auth from "../component/Auth/Auth";
+import VnPayCallback from "../component/Cart/VnPayCallback";
 
 const CustomerRoutes = () => {
   return (
@@ -17,6 +18,7 @@ const CustomerRoutes = () => {
         <Route path="/restaurant/:title/:id" element={<RestaurantDetail />} />
         <Route path="/cart" element={<Cart />} />
         <Route path="/my-profile/*" element={<Profile />} />
+        <Route path="/vnpay-payment" element={<VnPayCallback />} />
       </Routes>
       <Auth />
     </div>

@@ -41,6 +41,7 @@ const MenuTable = () => {
     );
   }, []);
   const handleDeleteFood = (foodId) => {
+    console.log(foodId, "111");
     dispatch(deleteFoodAction({ foodId, jwt }));
   };
   return (
@@ -87,7 +88,7 @@ const MenuTable = () => {
                         <Chip className="mr-1" label={ingredient.name}></Chip>
                       ))}
                     </TableCell>
-                    <TableCell align="center">{item.price} USD</TableCell>
+                    <TableCell align="center">{item.price} đ</TableCell>
                     <TableCell align="center">
                       {item.available ? "In Stoke" : "Out of Stoke"}
                     </TableCell>

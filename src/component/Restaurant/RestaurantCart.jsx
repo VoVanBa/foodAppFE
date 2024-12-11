@@ -47,7 +47,7 @@ const RestaurantCart = ({ item }) => {
             label={item.open ? "open" : "closed"}
           />
         </div>
-        <div className="p-4 textPart lg:flex w-full justify-between">
+        <div className="p-4 textPart lg:flex w-full justify-between cursor-pointer">
           <div className="space-y-1">
             <p
               onClick={handleNavigateToRestaurant}
@@ -55,7 +55,12 @@ const RestaurantCart = ({ item }) => {
             >
               {item.name}
             </p>
-            <p className="text-gray-500 text-sm">{item.description}</p>
+            <p
+              onClick={handleNavigateToRestaurant}
+              className="text-gray-500 text-sm"
+            >
+              {item.description}
+            </p>
           </div>
           <div>
             <IconButton onClick={handleAddToFavorite}>
